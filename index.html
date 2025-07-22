@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music Recommender</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #00b894, #00cec9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      color: #2d3436;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      width: 70%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #00b894;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #019875;
+    }
+
+    #results {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .song-card {
+      background: #f0f0f0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #2d3436;
+    }
+
+    .song-info {
+      max-width: 80%;
+    }
+
+    .song-info a {
+      color: #00b894;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .song-info a:hover {
+      text-decoration: underline;
+      color: #019875;
+    }
+
+    .like-button {
+      font-size: 24px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #00b894;
+      transition: color 0.3s ease;
+      user-select: none;
+    }
+
+    .like-button.liked {
+      color: #e74c3c; /* red heart color */
+    }
+
+    .like-button:hover {
+      color: #019875;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Music Recommender</h1>
+    <p>Generate playlists based on your favourite music</p>
+    <input id="inputBox" type="text" placeholder="Type a mood, artist, or song name" />
+    <br />
+    <button onclick="generateRecommendations()">Generate</button>
+    <button onclick="goToLiked()">View Liked Songs ❤️</button>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const mockSongs = [
+      { id: 1, title: "Echoes", artist: "Dreamshade", genre: "Rock", spotify: "https://open.spotify.com/track/4pb5vTKErW9LjxghJ7OZd9" },
+      { id: 2, title: "Chill Vibes", artist: "Lo-Fi Beats", genre: "Lo-fi", spotify: "https://open.spotify.com/playlist/37i9dQZF1DX889U0CL85jj" },
+      { id: 3, title: "Sunset Drive", artist: "Sundive", genre: "Indie", spotify: "https://open.spotify.com/track/6MbTq1iQ0ZkTUI6oqT09kP" },
+      { id: 4, title: "Push Harder", artist: "GymBro", genre: "Workout", spotify: "https://open.spotify.com/playlist/37i9dQZF1DX70RN3TfWWJh" },
+      { id: 5, title: "Melancholy Blue", artist: "Joji", genre: "Sad Pop", spotify: "https://open.spotify.com/artist/5WUlDfRSoLAfcVSX1WnrxN" },
+      { id: 6, title: "Energize", artist: "SynthSpark", genre: "Electronic", spotify: "https://open.spotify.com/track/3WIlVnVzT2K1f0y9Vo1ueV" },
+      { id: 7, title: "Tranquil Sky", artist: "ZenHarmony", genre: "Ambient", spotify: "https://open.spotify.com/album/1bSpIxco5z59gCykX5t8qv" },
+      { id: 8, title: "Night Drive", artist: "Chromatics", genre: "Synthwave", spotify: "https://open.spotify.com/track/2y8MmAywLOU3dN9ilZWxqR" },
+      { id: 9, title: "Weightless", artist: "Marconi Union", genre: "Ambient", spotify: "https://open.spotify.com/track/4iwDcCOxJKCHZ3wHe0xGrZ" },
+      { id: 10, title: "Blinding Lights", artist: "The Weeknd", genre: "Pop", spotify: "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b" },
+      { id: 11, title: "Lose Yourself", artist: "Eminem", genre: "Hip-Hop", spotify: "https://open.spotify.com/track/1p80LdxRV74UKvL8gnD7ky" },
+      { id: 12, title: "Sunflower", artist: "Post Malone", genre: "Hip-Hop", spotify: "https://open.spotify.com/track/3KkXRkHbMCARz0aVfEt68P" },
+      { id: 13, title: "Sweater Weather", artist: "The Neighbourhood", genre: "Indie", spotify: "https://open.spotify.com/track/0f7Rknd0GPaT0tEgfIv6iI" },
+      { id: 14, title: "Get Lucky", artist: "Daft Punk", genre: "Electronic", spotify: "https://open.spotify.com/track/69kOkLUCkxIZYexIgSG8rq" },
+      { id: 15, title: "Bad Guy", artist: "Billie Eilish", genre: "Pop", spotify: "https://open.spotify.com/track/2Fxmhks0bxGSBdJ92vM42m" },
+      { id: 16, title: "Sunrise", artist: "Norah Jones", genre: "Jazz", spotify: "https://open.spotify.com/track/2nLa6R6mDkFWC5rsbAJB6c" },
+      { id: 17, title: "Shape of You", artist: "Ed Sheeran", genre: "Pop", spotify: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3" },
+      { id: 18, title: "Stairway to Heaven", artist: "Led Zeppelin", genre: "Rock", spotify: "https://open.spotify.com/track/5CQ30WqJwcep0pYcV4AMNc" },
+      { id: 19, title: "Ocean Eyes", artist: "Billie Eilish", genre: "Pop", spotify: "https://open.spotify.com/track/2Fxmhks0bxGSBdJ92vM42m" },
+      { id: 20, title: "Drive", artist: "Incubus", genre: "Rock", spotify: "https://open.spotify.com/track/5EbIIs54Dr6Ftd5LhhHcvN" }
+    ];
+
+    // Load liked songs from localStorage or empty
+    let likedSongs = JSON.parse(localStorage.getItem("likedSongs")) || [];
+
+    function goToLiked() {
+      window.location.href = "liked.html";
+    }
+
+    function generateRecommendations() {
+      const input = document.getElementById("inputBox").value.trim().toLowerCase();
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+
+      if (input === "") {
+        resultsDiv.innerHTML = "<p>Please enter a mood, keyword, or song.</p>";
+        return;
+      }
+
+      // Score songs by input matches
+      const scoredSongs = mockSongs.map(song => {
+        let score = 0;
+        if (song.title.toLowerCase().includes(input)) score += 3;
+        if (song.artist.toLowerCase().includes(input)) score += 2;
+        if (song.genre.toLowerCase().includes(input)) score += 1;
+        return { ...song, score };
+      });
+
+      // Songs with positive score
+      const positiveMatches = scoredSongs.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+      let results = [];
+
+      if (positiveMatches.length >= 3) {
+        // If 3 or more matches, show max 5 best matches
+        results = positiveMatches.slice(0, 5);
+      } else {
+        // Less than 3 matches, add random songs to reach minimum 3
+        results = positiveMatches;
+
+        // Exclude those already in results
+        const excludedIds = positiveMatches.map(s => s.id);
+        const remaining = mockSongs.filter(s => !excludedIds.includes(s.id));
+
+        // Shuffle remaining songs
+        for (let i = remaining.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+        }
+
+        // Add random songs until at least 3 total
+        for (let i = 0; results.length < 3 && i < remaining.length; i++) {
+          results.push(remaining[i]);
+        }
+      }
+
+      if (results.length === 0) {
+        resultsDiv.innerHTML = "<p>No results found. Try a different keyword.</p>";
+        return;
+      }
+
+      results.forEach(song => displaySong(song, resultsDiv));
+    }
+
+    function displaySong(song, container) {
+      const songCard = document.createElement("div");
+      songCard.className = "song-card";
+
+      const info = document.createElement("div");
+      info.className = "song-info";
+      info.innerHTML = `
+        <strong>${song.title}</strong> by ${song.artist} — <em>${song.genre}</em>
+        <a href="${song.spotify}" target="_blank" rel="noopener noreferrer">Listen on Spotify</a>
+      `;
+
+      const likeBtn = document.createElement("button");
+      likeBtn.className = "like-button";
+      likeBtn.title = likedSongs.find(s => s.id === song.id) ? "Unlike this song" : "Like this song";
+      likeBtn.textContent = likedSongs.find(s => s.id === song.id) ? "❤️" : "🤍";
+
+      likeBtn.onclick = () => toggleLike(song, likeBtn);
+
+      songCard.appendChild(info);
+      songCard.appendChild(likeBtn);
+
+      container.appendChild(songCard);
+    }
+
+    function toggleLike(song, button) {
+      const index = likedSongs.findIndex(s => s.id === song.id);
+      if (index === -1) {
+        likedSongs.push(song);
+        button.textContent = "❤️";
+        button.title = "Unlike this song";
+      } else {
+        likedSongs.splice(index, 1);
+        button.textContent = "🤍";
+        button.title = "Like this song";
+      }
+      localStorage.setItem("likedSongs", JSON.stringify(likedSongs));
+    }
+  </script>
+</body>
+</html>

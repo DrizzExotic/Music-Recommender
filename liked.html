@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liked Songs ❤️</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #00b894, #00cec9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      color: #2d3436;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      max-width: 700px;
+      width: 90%;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    #likedSongs {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .song-card {
+      background: #f0f0f0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #2d3436;
+    }
+
+    .song-info {
+      flex-grow: 1;
+    }
+
+    .song-info strong {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .song-info a.spotify-link {
+      color: #00b894;
+      font-weight: bold;
+      text-decoration: none;
+      margin-left: 10px;
+    }
+
+    .song-info a.spotify-link:hover {
+      text-decoration: underline;
+      color: #019875;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #00b894;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #019875;
+    }
+
+    .button-row {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Liked Songs ❤️</h1>
+    <div class="button-row">
+      <button onclick="goBack()">← Back to Search</button>
+      <button onclick="clearLikedSongs()">Clear Liked Songs</button>
+    </div>
+    <div id="likedSongs"></div>
+  </div>
+
+  <script>
+    function loadLikedSongs() {
+      const likedDiv = document.getElementById("likedSongs");
+      likedDiv.innerHTML = "";
+
+      const likedSongs = JSON.parse(localStorage.getItem("likedSongs")) || [];
+
+      if (likedSongs.length === 0) {
+        likedDiv.innerHTML = "<p>You have no liked songs yet. Go back and like some!</p>";
+        return;
+      }
+
+      likedSongs.forEach(song => {
+        const songCard = document.createElement("div");
+        songCard.className = "song-card";
+
+        const info = document.createElement("div");
+        info.className = "song-info";
+        info.innerHTML = `
+          <strong>${song.title}</strong> by ${song.artist} — ${song.genre}
+          <a class="spotify-link" href="${song.spotify}" target="_blank" rel="noopener noreferrer">Listen on Spotify</a>
+        `;
+
+        songCard.appendChild(info);
+        likedDiv.appendChild(songCard);
+      });
+    }
+
+    function clearLikedSongs() {
+      if (confirm("Are you sure you want to clear all liked songs?")) {
+        localStorage.removeItem("likedSongs");
+        loadLikedSongs();
+      }
+    }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    // Load liked songs on page load
+    window.onload = loadLikedSongs;
+  </script>
+</body>
+</html>
