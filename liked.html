@@ -111,6 +111,11 @@
 
       const likedSongs = JSON.parse(localStorage.getItem("likedSongs")) || [];
 
+      const totalCount = document.createElement("div");
+      totalCount.className = "total-count";
+      totalCount.innerHTML = `<h3>Total Liked Songs: ${likedSongs.length}</h3>`;
+      likedDiv.appendChild(totalCount);
+
       if (likedSongs.length === 0) {
         likedDiv.innerHTML = "<p>You have no liked songs yet. Go back and like some!</p>";
         return;
